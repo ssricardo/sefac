@@ -2,11 +2,20 @@ package org.rss.sefac.app;
 
 import java.nio.file.Path;
 
+/**
+ * Representation of an WebApp, adding attributes to base {@link Application}
+ * @author Ricardo SS
+ *
+ */
 public class WebApp extends Application {
+
+	public WebApp(String appName) {
+		super(appName);
+	}
 
 	private String context;
 	
-	private Path webBase;
+	private Path webApp;
 
 	public void setContextRoot(String ctx) {
 		this.context = ctx;
@@ -16,12 +25,12 @@ public class WebApp extends Application {
 		return context;
 	}
 
-	public Path getWebBase() {
-		return webBase;
+	public Path getWebApp() {
+		return webApp;
 	}
 
-	public void setWebBase(Path webBase) {
-		this.webBase = webBase;
+	public void setWebApp(Path webBase) {
+		this.webApp = webBase;
 	}
 	
 }

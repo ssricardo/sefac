@@ -2,10 +2,13 @@ package org.rss.sefac.spi;
 
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.glassfish.embeddable.BootstrapProperties;
 import org.glassfish.embeddable.Deployer;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFishException;
@@ -27,7 +30,8 @@ public class Glassfish3Provider implements ServerProvider {
 	
 	static {
 		try {
-			runtime = GlassFishRuntime.bootstrap();
+			BootstrapProperties bp = new BootstrapProperties();
+			runtime = GlassFishRuntime.bootstrap(bp);
 		} catch (GlassFishException e) {
 			throw new IllegalStateException(e);
 		}
@@ -41,10 +45,16 @@ public class Glassfish3Provider implements ServerProvider {
 
 		try {
 			GlassFishProperties glassfishProperties = new GlassFishProperties();
-			glassfishProperties.setPort("http-listener", config.getPort());
-			/*if (config.getServerDir() != null) {
-				glassfishProperties.setInstanceRoot(config.getServerDir().toAbsolutePath().toString());
-			}*/
+			if (config.getPort() != null) {
+				glassfishProperties.setPort("http-listener", config.getPort());
+			}
+			
+			if (config.getServerDir() != null) {
+//				glassfishProperties.setInstanceRoot(config.getServerDir().toAbsolutePath().toString());
+				Path p = config.getServerDir().toAbsolutePath();
+				glassfishProperties.setProperty("org.glassfish.ejb.embedded.glassfish.installation.root", 
+						p.toString());
+			}
 
 			glassfish = runtime.newGlassFish(glassfishProperties);
 		} catch (GlassFishException e) {
@@ -59,26 +69,43 @@ public class Glassfish3Provider implements ServerProvider {
 					+ "A former call to setConfiguration() is required.");
 		}
 		try {
-			if (app instanceof WebApp) {
-				WebApp wApp = (WebApp) app;
-				ScatteredArchive archive = new ScatteredArchive(wApp.getContextRoot(), 
-						ScatteredArchive.Type.WAR);
-
-				if (wApp.getSourceLocation() != null) {
-					archive.addClassPath(app.getSourceLocation().toFile());
-				}
-				if (wApp.getWebBase() != null ) {
-					archive.addClassPath(wApp.getWebBase().toFile());
-				}
-				
-				appToDeploy.put(wApp.getContextRoot(), archive.toURI());
-				deployIfReady();
+			if (Files.isRegularFile(app.getSourceLocation())) {
+				appToDeploy.put(app.getName(), app.getSourceLocation().toUri());
 			} else {
-				// TODO
+				ScatteredArchive archive = null;
+				if (app instanceof WebApp) {
+					setupWebApp(app, archive);
+				} else {
+					if (Files.isRegularFile(app.getSourceLocation())) {
+						
+					}
+					archive = new ScatteredArchive(app.getName(), ScatteredArchive.Type.JAR);
+					appToDeploy.put(app.getName(), archive.toURI());
+				}
 			}
+			
+			deployIfReady();
 		} catch (GlassFishException | IOException e) {
 			throw new ConfigException(e);
 		}
+	}
+
+	private void setupWebApp(Application app, ScatteredArchive archive) throws IOException {
+		WebApp wApp = (WebApp) app;
+		
+		if (wApp.getWebApp() != null) {
+			archive = new ScatteredArchive(wApp.getName(), 
+					ScatteredArchive.Type.WAR, wApp.getWebApp().toFile());
+		} else {
+			archive = new ScatteredArchive(wApp.getName(), 
+					ScatteredArchive.Type.WAR);
+		}
+
+		if (wApp.getSourceLocation() != null) {
+			archive.addClassPath(app.getSourceLocation().toFile());
+		}
+		
+		appToDeploy.put(wApp.getContextRoot(), archive.toURI());
 	}
 
 	private void deployIfReady()
@@ -125,8 +152,7 @@ public class Glassfish3Provider implements ServerProvider {
 
 	@Override
 	public void setDeveloperMode(boolean value) {
-		// TODO Auto-generated method stub
-
+		throw new IllegalStateException("Not implemented yet");
 	}
 
 }

@@ -1,5 +1,6 @@
 package org.rss.sefac.test;
 
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.when;
 
 import java.nio.file.Files;
@@ -15,6 +16,7 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.rss.sefac.Server;
+import org.rss.sefac.app.JarApplication;
 import org.rss.sefac.app.WebApp;
 import org.rss.sefac.config.BasicConfiguration;
 import org.rss.sefac.spi.ServerProvider;
@@ -45,18 +47,23 @@ public class BasicConfigTest {
 
 		Server server = Server.create(config);
 
-		WebApp app = new WebApp();
+		WebApp app = new WebApp("testApi");
 		
 		Path baseDir = Paths.get("target/test-classes");
 				//Files.createTempDirectory("sefac").toAbsolutePath()/* Paths.get(System.getenv("java.io.tmp"))*/;
 		Files.createDirectories(baseDir);
 		app.setSourceLocation(baseDir);
 		app.setContextRoot("/test");	// TODO: handle slashes
-		app.setWebBase(Paths.get("src/test/resources/web"));
+		app.setWebApp(Paths.get("src/test/resources/web"));
 		server.addApplication(app);
 		
 		server.start();
 		server.stop();
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void testNoName() throws Exception {
+		new JarApplication(null);
 	}
 	
 	@Test

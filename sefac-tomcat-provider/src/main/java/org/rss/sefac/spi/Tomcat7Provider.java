@@ -11,7 +11,6 @@ import org.rss.sefac.app.WebApp;
 import org.rss.sefac.config.Configuration;
 import org.rss.sefac.exception.ConfigException;
 import org.rss.sefac.exception.ExecutionException;
-import org.rss.sefac.spi.ServerProvider;
 
 public class Tomcat7Provider implements ServerProvider {
 
@@ -32,7 +31,7 @@ public class Tomcat7Provider implements ServerProvider {
 		tomcat.setBaseDir((config.getServerDir() != null) 
 				? config.getServerDir().toString() : TMP);
 		tomcat.setPort((config.getPort() != null) ? config.getPort() : DEFAULT_PORT);
-//		tomcat.setHost(new HostConfig().);
+//		tomcat.setHost(new HostConfig().);	// TODO: configure host
 		tomcat.getHost().setAutoDeploy(true);
 		tomcat.getHost().setDeployOnStartup(true);
 		await = true;
@@ -48,14 +47,18 @@ public class Tomcat7Provider implements ServerProvider {
 		try {
 			StandardContext ctx = (StandardContext) 
 					tomcat.addWebapp(wApp.getContextRoot(), 
-							wApp.getWebBase().toAbsolutePath().toString());
+							wApp.getWebApp().toAbsolutePath().toString());
 
 			processAppResources(app, ctx);
 		} catch (ServletException e) {
+			throw new ConfigException(e);
 		}
 	}
 
 	private void processAppResources(Application app, StandardContext ctx) {
+		if (app.getSourceLocation() == null) {
+			return;
+		}
 		VirtualDirContext resources = new VirtualDirContext();
 		String resPath = "/WEB-INF/classes=" 
 				+ app.getSourceLocation().toAbsolutePath().toString();

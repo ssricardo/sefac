@@ -12,10 +12,26 @@
 	<groupId>org.rss.tests</groupId>
 	<artifactId>simple-war-app</artifactId>
 	<version>1.0-SNAPSHOT</version>
-	<packaging>war</packaging>
+	<!-- <packaging>war</packaging> -->
+	<!-- Using as a JAR so that other jar modules can depend on this -->
 
 	<build>
-		<finalName>test-${project.artifactId}</finalName>
+		<finalName>${project.artifactId}</finalName>
+		<plugins>	
+			<plugin>
+	            <groupId>org.apache.maven.plugins</groupId>
+	            <artifactId>maven-war-plugin</artifactId>
+	            <executions>
+	                <execution>
+	                    <id>make-a-war</id>
+	                    <phase>compile</phase>
+	                    <goals>
+	                        <goal>war</goal>
+	                    </goals>
+	                </execution>
+	            </executions>
+	        </plugin>
+		</plugins>
 	</build>
 
 	<dependencies>

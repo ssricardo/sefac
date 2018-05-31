@@ -2,12 +2,21 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://java.sun.com/jsf/html">
     <head>
-        <title></title>
+        <title>User Page</title>
     </head>
     <body>
+    	<h1>Test User Page</h1>
         <h:form prependId="false">
-            <h:inputText value="#{userBean.firstName}" />
-            <h:commandButton value="submit" />
+        	<h:panelGrid columns="2">
+        		<h:outputText />
+        		<h:outputText value="#{userBean.firstName}" />
+        	
+        		<h:outputText value="Change Name: " />
+            	<h:inputText value="#{userBean.firstName}" />
+            	
+            	<h:outputText />
+            	<h:commandButton value="Submit" />
+            </h:panelGrid>
         </h:form>
     </body>
 </html>
