@@ -1,0 +1,41 @@
+@startuml
+
+class srv as "Server" {
+    create(Configuration)
+    addApplication(Application)
+    start()
+    stop()
+    unwrap(class)
+    setDeveloperMode(bool)
+}
+
+interface conf as "Configuration" {
+    serverDir: path
+    port: int
+    host: str
+}
+
+class BasicConfiguration implements conf {
+}
+
+class app as "Application" {
+    sourceLocation: path
+    name: str
+}
+
+class WebApp extends app {
+}
+
+class JarApp extends app {
+}
+
+class ServerProvider {
+}
+
+'------------------ relations ----------------------
+
+srv "1" *-- "1" conf
+srv "1" -- "n" app
+srv .. ServerProvider
+
+@enduml

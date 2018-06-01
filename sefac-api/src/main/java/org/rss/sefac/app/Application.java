@@ -13,6 +13,10 @@ public abstract class Application {
 
 	private final String name;
 
+	
+	/**
+	 * @param appName: A single identifier for the application
+	 */
 	public Application(String appName) {
 		if (appName == null || appName.isEmpty()) {
 			throw new IllegalArgumentException("Application name must not be empty");
