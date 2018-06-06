@@ -1,5 +1,7 @@
 # SeFac
 
+> keywords: java application server microservice embedded facade
+
 **SeFac** stands for *Server Facade*. 
 It's a project to make easier to use embedded application servers in Java.  
 Sometimes developers may want to test their codes against several servers. But currently, without *Sefac* it's necessary  to change completely the code that refers to the integration with the server.   
@@ -32,13 +34,13 @@ The BasicConfiguration is the programmatically one
 
 ### Application
 
-May represent eigher a packed application (war / jar) or an exploded application (set of directories)
+May represent either a packed application (war / jar) or an exploded application (set of directories)
 
 
 ## Next Steps (TODOs)
 
 * Add more providers (support more application servers)
-* Implements Develop mode features
+* Implements Development mode features
 	* Watch dog
 * Consider use an ApplicationBuilder, ensuring required values
 * Increase test covering
