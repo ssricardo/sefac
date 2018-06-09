@@ -46,13 +46,21 @@ public class Tomcat7Provider implements ServerProvider {
 		WebApp wApp = (WebApp) app;
 		try {
 			StandardContext ctx = (StandardContext) 
-					tomcat.addWebapp(wApp.getContextRoot(), 
+					tomcat.addWebapp(handleContextBar(wApp), 
 							wApp.getWebApp().toAbsolutePath().toString());
 
 			processAppResources(app, ctx);
 		} catch (ServletException e) {
 			throw new ConfigException(e);
 		}
+	}
+	
+	private String handleContextBar(WebApp wApp) {
+		if (wApp.getContextRoot() == null) {
+			return null;
+		}
+		return wApp.getContextRoot().startsWith("/") ?  wApp.getContextRoot() 
+				: "/" + wApp.getContextRoot();
 	}
 
 	private void processAppResources(Application app, StandardContext ctx) {
@@ -93,7 +101,7 @@ public class Tomcat7Provider implements ServerProvider {
 		if (Tomcat.class.equals(klass)) {
 			return (T) tomcat;
 		}
-		if (Tomcat7Provider.class.equals(klass)) {
+		if (Tomcat7Provider.class.equals(klass) || ServerProvider.class.equals(klass)) {
 			return (T) this;
 		}
 		return null;

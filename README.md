@@ -39,11 +39,10 @@ May represent either a packed application (war / jar) or an exploded application
 
 ## Next Steps (TODOs)
 
-* Add more providers (support more application servers)
+* Add Jboss provider (support more application servers)
 * Implements Development mode features
 	* Watch dog
 * Consider use an ApplicationBuilder, ensuring required values
-* Increase test covering
 * Implement other configuration options
 	* XML file
 	* Declarative (annotations) 

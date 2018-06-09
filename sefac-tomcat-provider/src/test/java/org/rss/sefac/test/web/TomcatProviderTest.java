@@ -13,6 +13,7 @@ import org.powermock.reflect.Whitebox;
 import org.rss.sefac.Server;
 import org.rss.sefac.app.WebApp;
 import org.rss.sefac.config.BasicConfiguration;
+import org.rss.sefac.spi.ServerProvider;
 import org.rss.sefac.spi.Tomcat7Provider;
 
 public class TomcatProviderTest {
@@ -55,7 +56,7 @@ public class TomcatProviderTest {
 		Path baseDir = Paths.get("target/test-classes");
 		Files.createDirectories(baseDir);
 		app.setSourceLocation(baseDir);
-		app.setContextRoot("/test");	// TODO: handle slashes
+		app.setContextRoot("/test");
 		app.setWebApp(Paths.get("src/test/resources/web"));
 		server.addApplication(app);
 		
@@ -83,7 +84,7 @@ public class TomcatProviderTest {
 				Paths.get("../simple-war-app/target/simple-war-app.war"));
 		server.addApplication(app);
 		
-		Tomcat7Provider prov = server.unwrap(Tomcat7Provider.class);
+		ServerProvider prov = server.unwrap(ServerProvider.class);
 		Whitebox.setInternalState(prov, "await", false);
 		
 		server.start();

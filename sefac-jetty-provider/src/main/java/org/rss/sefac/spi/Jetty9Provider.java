@@ -1,5 +1,6 @@
 package org.rss.sefac.spi;
 
+import java.nio.file.Files;
 import java.util.Arrays;
 
 import org.eclipse.jetty.annotations.AnnotationConfiguration;
@@ -22,6 +23,8 @@ import org.rss.sefac.exception.ExecutionException;
 public class Jetty9Provider implements ServerProvider {
 
 	private Server server;
+	
+	private boolean syncStart = false;
 
 	@Override
 	public void setConfiguration(Configuration config) throws ConfigException {
@@ -32,7 +35,7 @@ public class Jetty9Provider implements ServerProvider {
 
 		ServerConnector serverConn = new ServerConnector(server);
 		serverConn.setPort(config.getPort());
-//		serverConn.setHost(config.getHost());
+		serverConn.setHost(config.getHost());
 		server.addConnector(serverConn);
 	}
 
@@ -41,55 +44,52 @@ public class Jetty9Provider implements ServerProvider {
 		
 		if (app instanceof WebApp) {
 			WebApp wApp = (WebApp) app;
-			
-			/*ContextHandler context = new ContextHandler("/");
-			server.setHandler(context);*/
-			
-			/*ResourceHandler resourceHandler = new ResourceHandler();
-			resourceHandler.setDirectoriesListed(true);
-			resourceHandler.setWelcomeFiles(new String[] { "index.html" });
-			resourceHandler.setResourceBase(wApp.getWebApp().toString());
-			context.setHandler(resourceHandler);*/
-			
+
 			WebAppContext webapp = new WebAppContext();
-			webapp.setContextPath(wApp.getContextRoot());
-			webapp.setResourceBase(wApp.getWebApp().toString());
-			/*webapp.setConfigurations(new Configuration[] 
-			        { 
-			            new AnnotationConfiguration(),
-			            new WebInfConfiguration(), 
-			            new WebXmlConfiguration(),
-			            new MetaInfConfiguration(), 
-			            new FragmentConfiguration(), 
-			            new EnvConfiguration(),
-			            new PlusConfiguration(), 
-			            new JettyWebXmlConfiguration() 
-			        });*/
+			webapp.setContextPath(handleContextBar(wApp));
 			webapp.setConfigurations(new org.eclipse.jetty.webapp.Configuration[] {
 	                new AnnotationConfiguration(), new WebXmlConfiguration(),
 	                new WebInfConfiguration(),
 	                new PlusConfiguration(), new MetaInfConfiguration(),
 	                new FragmentConfiguration(), new EnvConfiguration() });
 			
-			
 	        webapp.setParentLoaderPriority(true);
-			webapp.getMetaData().setWebInfClassesDirs(
-					Arrays.asList(
-							Resource.newResource(app.getSourceLocation().toAbsolutePath().toFile())));
-//			webapp.setServer(server);
+
+			if (Files.isDirectory(wApp.getWebApp())) {
+				webapp.setResourceBase(wApp.getWebApp().toString());
+				
+		        if (app.getSourceLocation() != null) {
+		        	webapp.getMetaData().setWebInfClassesDirs(
+							Arrays.asList(
+									Resource.newResource(app.getSourceLocation().toAbsolutePath().toFile())));
+		        }
+			} else {
+		        webapp.setWar(wApp.getWebApp().toString());
+			}
+			
 			server.setHandler(webapp);
 			
-//			context.setTempDirectory(new File("/some/dir/foo"));
-//			context.setAttribute("org.eclipse.jetty.webapp.basetempdir", "/tmp/foo");
+		} else {
+			throw new IllegalArgumentException("Jetty implementation supports on WebApp");
 		}
 
+	}
+
+	private String handleContextBar(WebApp wApp) {
+		if (wApp.getContextRoot() == null) {
+			return null;
+		}
+		return (wApp.getContextRoot().startsWith("/")) ?  wApp.getContextRoot() 
+				: "/" + wApp.getContextRoot();
 	}
 
 	@Override
 	public void start() throws ExecutionException {
 		try {
 			server.start();
-			server.join();
+			if (syncStart) {
+				server.join();
+			}
 		} catch (Exception e) {
 			throw new ExecutionException(e);
 		}

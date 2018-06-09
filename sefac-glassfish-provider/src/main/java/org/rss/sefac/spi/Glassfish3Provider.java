@@ -50,7 +50,6 @@ public class Glassfish3Provider implements ServerProvider {
 			}
 			
 			if (config.getServerDir() != null) {
-//				glassfishProperties.setInstanceRoot(config.getServerDir().toAbsolutePath().toString());
 				Path p = config.getServerDir().toAbsolutePath();
 				glassfishProperties.setProperty("org.glassfish.ejb.embedded.glassfish.installation.root", 
 						p.toString());
@@ -76,9 +75,6 @@ public class Glassfish3Provider implements ServerProvider {
 				if (app instanceof WebApp) {
 					setupWebApp(app, archive);
 				} else {
-					if (Files.isRegularFile(app.getSourceLocation())) {
-						
-					}
 					archive = new ScatteredArchive(app.getName(), ScatteredArchive.Type.JAR);
 					appToDeploy.put(app.getName(), archive.toURI());
 				}
@@ -96,9 +92,6 @@ public class Glassfish3Provider implements ServerProvider {
 		if (wApp.getWebApp() != null) {
 			archive = new ScatteredArchive(wApp.getName(), 
 					ScatteredArchive.Type.WAR, wApp.getWebApp().toFile());
-		} else {
-			archive = new ScatteredArchive(wApp.getName(), 
-					ScatteredArchive.Type.WAR);
 		}
 
 		if (wApp.getSourceLocation() != null) {
@@ -144,7 +137,9 @@ public class Glassfish3Provider implements ServerProvider {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T unwrap(Class<T> klass) {
-		if (GlassFish.class.equals(klass)) {
+		if (ServerProvider.class.equals(klass)) {
+			return (T) this;
+		} else if (GlassFish.class.equals(klass)) {
 			return (T) this.glassfish;
 		}
 		return null;
